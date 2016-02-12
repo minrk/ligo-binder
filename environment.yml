@@ -1,7 +1,8 @@
 dependencies:
   - numpy
   - scipy
-  - matplotlib
+  - matplotlib>=1.5
+  - seaborn
   - h5py
   - notebook
 

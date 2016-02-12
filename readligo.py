@@ -57,10 +57,14 @@ data files with getsegs():
 Written by Jonah Kanner
 2014 
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import numpy as np
 import os
 import fnmatch
+from six.moves import range
+from six.moves import zip
 
 def read_frame(filename, ifo, readstrain=True):
     """
@@ -190,7 +194,7 @@ def loaddata(filename, ifo=None, tvec=True, readstrain=True):
     try:
         channel_dict['DEFAULT'] = ( channel_dict['DATA'] )
     except:
-        print "Warning: Failed to calculate DEFAULT data quality channel"
+        print("Warning: Failed to calculate DEFAULT data quality channel")
 
     if tvec:
         return strain, time, channel_dict
@@ -211,7 +215,7 @@ def dq2segs(channel, gps_start):
         try:
             channel = channel['DEFAULT']
         except:
-            print "ERROR: Could not find DEFAULT channel in dictionary"
+            print("ERROR: Could not find DEFAULT channel in dictionary")
             raise
 
     #-- Create the segment list
@@ -243,7 +247,7 @@ def dq_channel_to_seglist(channel, fs=4096):
         try:
             channel = channel['DEFAULT']
         except:
-            print "ERROR: Could not find DEFAULT channel in dictionary"
+            print("ERROR: Could not find DEFAULT channel in dictionary")
             raise
 
     # -- Create the segment list
@@ -283,7 +287,7 @@ class FileList():
             else:
                 directory='.'
 
-        print "Using data directory {0} ...".format(directory)
+        print("Using data directory {0} ...".format(directory))
         self.directory = directory
         self.cache = cache
         if cache is None:
@@ -316,7 +320,7 @@ class FileList():
         start_gps = gps - (gps % 4096)
         filenamelist = fnmatch.filter(self.list, '*' + '-' + ifo + '*' + '-' + str(start_gps) + '-' + '*')
         if len(filenamelist) == 0:
-            print "WARNING!  No file found for GPS {0} and IFO {1}".format(gps, ifo)
+            print("WARNING!  No file found for GPS {0} and IFO {1}".format(gps, ifo))
             return None
         else:
             return filenamelist[0]
@@ -361,7 +365,7 @@ def getstrain(start, stop, ifo, filelist=None):
     # -- Loop over needed files
     for time in gpsList:
         filename = filelist.findfile(time, ifo)
-        print "Loading {0}".format(filename)
+        print("Loading {0}".format(filename))
 
         #-- Read in data
         strain, meta, dq = loaddata(filename, ifo, tvec=False)
@@ -373,7 +377,7 @@ def getstrain(start, stop, ifo, filelist=None):
         if m_dq is None:
             m_dq = dq
         else:
-            for key in dq.keys():
+            for key in list(dq.keys()):
                 m_dq[key] = np.append(m_dq[key], dq[key])
 
     # -- Trim the data
@@ -381,7 +385,7 @@ def getstrain(start, stop, ifo, filelist=None):
     rndx = np.abs(stop - m_start)*(1.0/dt)
         
     m_strain = m_strain[lndx:rndx]
-    for key in m_dq.keys():
+    for key in list(m_dq.keys()):
         m_dq[key] = m_dq[key][lndx*dt:rndx*dt]
 
     meta['start'] = start
@@ -400,7 +404,7 @@ class SegmentList():
                 start, stop = np.loadtxt(filename, dtype='int',unpack=True)
             elif numcolumns == 3:
                 start, stop, duration = np.loadtxt(filename, dtype='int',unpack=True)
-            self.seglist = zip(start, stop)
+            self.seglist = list(zip(start, stop))
         elif type(filename) is list:
             self.seglist = filename
         else:
@@ -442,20 +446,20 @@ def getsegs(start, stop, ifo, flag='DATA', filelist=None):
 
         #-- Read in data
         if filename is None:
-            print "WARNING! No file found with GPS start time {0}".format(time)
-            print "Segment list may contain errors due to missing files."
+            print("WARNING! No file found with GPS start time {0}".format(time))
+            print("Segment list may contain errors due to missing files.")
             continue
         else:
             try:
                 strain, meta, dq = loaddata(filename, ifo, tvec=False, readstrain=False)     
             except:
-                print "WARNING! Failed to load file {0}".format(filename)
-                print "Segment list may contain errors due to corrupt files."
+                print("WARNING! Failed to load file {0}".format(filename))
+                print("Segment list may contain errors due to corrupt files.")
                 continue
 
         if dq is None:
-            print "Warning! Found zero length file {0}".format(filename)
-            print "Segment list may contain errors."
+            print("Warning! Found zero length file {0}".format(filename))
+            print("Segment list may contain errors.")
             continue
 
         #-- Add segments to list on a file-by-file basis

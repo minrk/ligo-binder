@@ -1,4 +1,5 @@
-# LOSC_Event_tutorial
-The home for this is https://losc.ligo.org/tutorials/
+# LIGO Binder
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/losc-tutorial/LOSC_Event_tutorial)
+[![Binder](http://mybinder.org/badge.svg)]([![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/repo/minrk/ligo-binder))
+
+A binder for doing a live demo of the [LIGO tutorial](https://losc.ligo.org/events/GW170104/). Fixes a few things.

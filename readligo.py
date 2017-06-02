@@ -272,7 +272,7 @@ def dq_channel_to_seglist(channel, fs=4096):
         boundaries = np.append(boundaries,len(condition))
 
     # -- group the segment boundaries two by two
-    segments = boundaries.reshape((len(boundaries)/2,2))
+    segments = boundaries.reshape((len(boundaries)//2,2))
     # -- Account for sampling frequency and return a slice
     segment_list = [slice(start*fs, stop*fs) for (start,stop) in segments]
     

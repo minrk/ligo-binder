@@ -3,7 +3,7 @@
 
 # # BINARY BLACK HOLE SIGNALS IN LIGO OPEN DATA 
 # 
-# Version 1.4, 2016 June 30
+# Version 1.50, 2017 May 2
 # 
 # Welcome! This IPython notebook (or associated python script LOSC_Event_tutorial.py ) will go through some typical signal processing tasks on strain time-series data associated with the LIGO Event data releases from the LIGO Open Science Center (LOSC):
 # 
@@ -55,7 +55,7 @@
 # If you are using a pre-configured setup (eg, in binder), great! You don't have to download or set up anything.
 # 
 # Otherwise, to begin, get the necessary files, by downloading the zip file and unpacking it into single directory:
-# * <a href='https://losc.ligo.org/s/events/LOSC_Event_tutorial_v1.4.zip'>LOSC_Event_tutorial_v1.4.zip</a>
+# * <a href='https://losc.ligo.org/s/events/LOSC_Event_tutorial.zip'>LOSC_Event_tutorial.zip</a>
 # 
 # This zip file contains:
 # 
@@ -77,7 +77,7 @@
 
 # ## Set the event name to choose event and the plot type
 
-# In[ ]:
+# In[1]:
 
 #-- SET ME   Tutorial should work with most binary black hole events
 #-- Default is no event selection; you MUST select one to proceed.
@@ -85,6 +85,7 @@ eventname = ''
 # eventname = 'GW150914' 
 # eventname = 'GW151226' 
 # eventname = 'LVT151012'
+eventname = 'GW170104'
 
 # want plots?
 make_plots = 1
@@ -92,7 +93,7 @@ plottype = "png"
 #plottype = "pdf"
 
 
-# In[ ]:
+# In[2]:
 
 # Standard python numerical analysis imports:
 import numpy as np
@@ -103,8 +104,8 @@ import h5py
 import json
 
 # the IPython magic below must be commented out in the .py file, since it doesn't work there.
-#%matplotlib inline
-#%config InlineBackend.figure_format = 'retina'
+get_ipython().magic(u'matplotlib inline')
+get_ipython().magic(u"config InlineBackend.figure_format = 'retina'")
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 
@@ -116,10 +117,10 @@ import readligo as rl
 
 # ### Read the event properties from a local json file (download in advance):
 
-# In[ ]:
+# In[3]:
 
 # Read the event properties from a local json file
-fnjson = "O1_events.json"
+fnjson = "BBH_events_v2.json"
 try:
     events = json.load(open(fnjson,"r"))
 except IOError:
@@ -136,7 +137,7 @@ except:
     quit()
 
 
-# In[ ]:
+# In[4]:
 
 # Extract the parameters for the desired event:
 event = events[eventname]
@@ -153,7 +154,7 @@ print(event)
 # ## Read in the data
 # We will make use of the data, and waveform template, defined above.
 
-# In[ ]:
+# In[5]:
 
 #----------------------------------------------------------------
 # Load LIGO data from a single file.
@@ -180,7 +181,7 @@ except:
 
 # ## First look at the data from H1 and L1
 
-# In[ ]:
+# In[6]:
 
 # both H1 and L1 will have the same time vector, so:
 time = time_H1
@@ -201,7 +202,7 @@ print("For L1, {0} out of {1} seconds contain usable DATA".format(bits.sum(), le
  
 
 
-# In[ ]:
+# In[7]:
 
 # plot +- deltat seconds around the event:
 # index into the strain time series for this time interval:
@@ -237,7 +238,7 @@ if make_plots:
 # There's a signal in these data! 
 # For the moment, let's ignore that, and assume it's all noise.
 
-# In[ ]:
+# In[8]:
 
 make_psds = 1
 if make_psds:
@@ -304,7 +305,7 @@ if make_plots:
 # B. Allen et al., PHYSICAL REVIEW D 85, 122006 (2012) ; http://arxiv.org/abs/gr-qc/0509116
 # 
 
-# In[ ]:
+# In[9]:
 
 BNS_range = 1
 if BNS_range:
@@ -392,9 +393,9 @@ if BNS_range:
 # 
 # We will plot the whitened strain data, along with the signal template, after the matched filtering section, below.
 
-# In[ ]:
+# In[10]:
 
-# function to writen data
+# function to whiten data
 def whiten(strain, interp_psd, dt):
     Nt = len(strain)
     freqs = np.fft.rfftfreq(Nt, dt)
@@ -422,7 +423,7 @@ if whiten_data:
 # 
 # Now let's plot a short time-frequency spectrogram around our event:
 
-# In[ ]:
+# In[11]:
 
 if make_plots:
     # index into the strain time series for this time interval:
@@ -469,7 +470,7 @@ if make_plots:
 # 
 # Now let's zoom in on where we think the signal is, using the whitened data, in the hope of seeing a chirp:
 
-# In[ ]:
+# In[12]:
 
 if make_plots:
     #  plot the whitened data, zooming in on the signal region:
@@ -506,7 +507,7 @@ if make_plots:
 
 
 # Loud (high SNR) signals may be visible in these spectrograms.  Compact object mergers show a characteristic "chirp" as the signal rises in frequency.  If you can't see anything, try
-# <a href='https://losc.ligo.org/events/GW150914/'>event GW150914</a>, by changing the 
+# <a href='https://losc.ligo.org/events/GW150914/'>event GW150914</a>, by changing the `eventname` variable in the first cell above.
 
 # ## Waveform Template
 # 
@@ -514,7 +515,7 @@ if make_plots:
 # 
 # As noted above, the results won't be identical to what is in the LIGO-Virgo papers, since we're skipping many subtleties, such as combining many consistent templates.
 
-# In[ ]:
+# In[13]:
 
 # read in the template (plus and cross) and parameters for the theoretical waveform
 try:
@@ -526,7 +527,7 @@ except:
     quit()
 
 
-# In[ ]:
+# In[14]:
 
 # extract metadata from the template file:
 template_p, template_c = f_template["template"][...]
@@ -567,7 +568,8 @@ ttime = time-time[0]-template_offset
 tphase = np.unwrap(np.angle(template))
 fGW = np.gradient(tphase)*fs/(2.*np.pi)
 # fix discontinuities at the very end:
-iffix = np.where(np.abs(np.gradient(fGW)) > 100.)[0]
+# iffix = np.where(np.abs(np.gradient(fGW)) > 100.)[0]
+iffix = np.where(np.abs(template) < np.abs(template).max()*0.001)[0]
 fGW[iffix] = fGW[iffix[0]-1]
 fGW[np.where(fGW < 1.)] = fGW[iffix[0]-1]
 
@@ -598,7 +600,7 @@ print('Radius of final BH = {0:.0f} km'.format(R_fin))
 if make_plots:
     plt.figure(figsize=(10,16))
     plt.subplot(4,1,1)
-    plt.plot(time-time[0]-template_offset,template_p)
+    plt.plot(ttime,template_p)
     plt.xlim([-template_offset,1.])
     plt.grid()
     plt.xlabel('time (s)')
@@ -653,7 +655,7 @@ if make_plots:
 # GW150914: First results from the search for binary black hole coalescence with Advanced LIGO,
 # The LIGO Scientific Collaboration, the Virgo Collaboration, http://arxiv.org/abs/1602.03839
 
-# In[ ]:
+# In[15]:
 
 # -- To calculate the PSD of the data, choose an overlap and a window (common to all detectors)
 #   that minimizes "spectral leakage" https://en.wikipedia.org/wiki/Spectral_leakage
@@ -821,7 +823,7 @@ for det in dets:
 # 
 # Make wav (sound) files from the filtered, downsampled data, +-2s around the event.
 
-# In[ ]:
+# In[16]:
 
 # make wav (sound) files from the whitened data, +-2s around the event.
 
@@ -857,7 +859,7 @@ write_wavfile(eventname+"_template_whiten.wav",int(fs), template_p_smooth[indxt]
 # 
 # The code below will shift the data up by 400 Hz (by taking an FFT, shifting/rolling the frequency series, then inverse fft-ing). The resulting sound file will be noticibly more high-pitched, and the signal will be easier to hear.
 
-# In[ ]:
+# In[17]:
 
 # function that shifts frequency of a band-passed signal
 def reqshift(data,fshift=100,sample_rate=4096):
@@ -894,7 +896,7 @@ write_wavfile(eventname+"_template_shifted.wav",int(fs), template_p_shifted[indx
 
 # ### Listen to the frequency-shifted template
 
-# In[ ]:
+# In[18]:
 
 fna = eventname+"_template_shifted.wav"
 print(fna)
@@ -910,7 +912,7 @@ Audio(fna)
 # 
 # We also unpack the DQ and HW injection bits to check what their values are.
 
-# In[ ]:
+# In[19]:
 
 data_segments = 1
 if data_segments:
@@ -962,4 +964,4 @@ if data_segments:
 # If, however, you are interested in signals with frequency content above 2048 Hz, you need the data sampled at the full rate of 16384 Hz. 
 # 
 # In the tutorial for GW150914: https://losc.ligo.org/s/events/GW150914/GW150914_tutorial.html
-# we demonstrate how to get the data at the full 16384 Hz sampling rate, do the downsampling, and show how it might limit you is you are interested in frequency content near 2048 Hz and above.
+# we demonstrate how to get the data at the full 16384 Hz sampling rate, do the downsampling, and show how it might limit you if you are interested in frequency content near 2048 Hz and above.
